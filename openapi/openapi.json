@@ -1142,6 +1142,25 @@
         ],
         "type": "object"
       },
+      "ConverterInfo": {
+        "properties": {
+          "formats": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "formats",
+          "name",
+          "title"
+        ],
+        "type": "object"
+      },
       "CreateAccountReq": {
         "properties": {
           "cgi": {
@@ -1855,6 +1874,87 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "HostingBackupInventory": {
+        "properties": {
+          "apps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "cron": {
+            "type": "integer"
+          },
+          "databases": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "ftp": {
+            "type": "integer"
+          },
+          "has_secrets": {
+            "type": "boolean"
+          },
+          "home_bytes": {
+            "type": "integer"
+          },
+          "mail_settings": {
+            "type": "integer"
+          },
+          "mailboxes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "main_domain": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "ssl": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "username": {
+            "type": "string"
+          },
+          "web_settings": {
+            "type": "integer"
+          },
+          "zones": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "apps",
+          "cron",
+          "databases",
+          "ftp",
+          "has_secrets",
+          "home_bytes",
+          "mail_settings",
+          "mailboxes",
+          "main_domain",
+          "source",
+          "ssl",
+          "username",
+          "web_settings",
+          "zones"
+        ],
         "type": "object"
       },
       "HostingCFDomain": {
@@ -2674,6 +2774,66 @@
           "ok",
           "steps",
           "to"
+        ],
+        "type": "object"
+      },
+      "HostingRestoreItems": {
+        "properties": {
+          "apps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "cron": {
+            "type": "boolean"
+          },
+          "databases": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "dns": {
+            "type": "boolean"
+          },
+          "files": {
+            "type": "boolean"
+          },
+          "ftp": {
+            "type": "boolean"
+          },
+          "mail_settings": {
+            "type": "boolean"
+          },
+          "mailboxes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "secrets": {
+            "type": "boolean"
+          },
+          "ssl": {
+            "type": "boolean"
+          },
+          "web_settings": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "apps",
+          "cron",
+          "databases",
+          "dns",
+          "files",
+          "ftp",
+          "mail_settings",
+          "mailboxes",
+          "secrets",
+          "ssl",
+          "web_settings"
         ],
         "type": "object"
       },
@@ -4232,6 +4392,9 @@
           "logs": {
             "type": "boolean"
           },
+          "secrets": {
+            "type": "boolean"
+          },
           "suspended": {
             "type": "boolean"
           },
@@ -4243,6 +4406,7 @@
           "accounts",
           "bandwidth",
           "logs",
+          "secrets",
           "suspended",
           "system"
         ],
@@ -13099,6 +13263,213 @@
         "x-kypanel-token": "admin token area: accounts; account token area: backups"
       }
     },
+    "/api/v1/accounts/{id}/backups/convert": {
+      "post": {
+        "description": "An upload or {\"path\": a file in the home}; the KyPanel backup is saved in the home.",
+        "operationId": "accountConvert",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "job_id": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Accepted (runs in the background)"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "400 Bad Request: file-operation, invalid-body, upload, validation"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "401 Unauthorized: no session, or an invalid or expired token"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "403 Forbidden: the caller can't use this (privileges, token scope, feature turned off)"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "404 Not Found: not-found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "409 Conflict: not-ready"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "500 Internal Server Error: internal"
+          }
+        },
+        "summary": "Convert another panel's backup into this account's home",
+        "tags": [
+          "Backups"
+        ],
+        "x-kypanel-access": "root, reseller (ACL: create-user-session); customer",
+        "x-kypanel-feature": "backups",
+        "x-kypanel-token": "admin token area: accounts; account token area: backups"
+      }
+    },
+    "/api/v1/accounts/{id}/backups/converters": {
+      "get": {
+        "operationId": "accountConverters",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "items": {
+                      "items": {
+                        "$ref": "#/components/schemas/ConverterInfo"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "401 Unauthorized: no session, or an invalid or expired token"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "403 Forbidden: the caller can't use this (privileges, token scope, feature turned off)"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "404 Not Found: not-found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "409 Conflict: not-ready"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "500 Internal Server Error: internal"
+          }
+        },
+        "summary": "List the backup converters",
+        "tags": [
+          "Backups"
+        ],
+        "x-kypanel-access": "root, reseller (ACL: create-user-session); customer",
+        "x-kypanel-feature": "backups",
+        "x-kypanel-token": "admin token area: accounts; account token area: backups"
+      }
+    },
     "/api/v1/accounts/{id}/backups/full": {
       "post": {
         "operationId": "userFullBackup",
@@ -13122,6 +13493,9 @@
                   },
                   "host": {
                     "type": "string"
+                  },
+                  "include_secrets": {
+                    "type": "boolean"
                   },
                   "password": {
                     "type": "string"
@@ -13715,6 +14089,109 @@
         "x-kypanel-token": "admin token area: accounts; account token area: backups"
       }
     },
+    "/api/v1/accounts/{id}/backups/{sid}/contents": {
+      "get": {
+        "operationId": "snapshotContents",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "sid",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {},
+                  "type": "object"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "401 Unauthorized: no session, or an invalid or expired token"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "403 Forbidden: the caller can't use this (privileges, token scope, feature turned off)"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "404 Not Found: not-found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "409 Conflict: not-ready"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "422 Unprocessable Entity: backup"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "500 Internal Server Error: internal"
+          }
+        },
+        "summary": "See what a backup holds",
+        "tags": [
+          "Backups"
+        ],
+        "x-kypanel-access": "root, reseller (ACL: create-user-session); customer",
+        "x-kypanel-feature": "backups",
+        "x-kypanel-token": "admin token area: accounts; account token area: backups"
+      }
+    },
     "/api/v1/accounts/{id}/backups/{sid}/download": {
       "get": {
         "operationId": "accountBackupDownload",
@@ -14054,6 +14531,128 @@
           }
         },
         "summary": "Restore files from a backup",
+        "tags": [
+          "Backups"
+        ],
+        "x-kypanel-access": "root, reseller (ACL: create-user-session); customer",
+        "x-kypanel-feature": "backups",
+        "x-kypanel-token": "admin token area: accounts; account token area: backups"
+      }
+    },
+    "/api/v1/accounts/{id}/backups/{sid}/restore-items": {
+      "post": {
+        "operationId": "snapshotRestoreItems",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "sid",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "items": {
+                    "$ref": "#/components/schemas/HostingRestoreItems"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "job_id": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Accepted (runs in the background)"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "400 Bad Request: validation"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "401 Unauthorized: no session, or an invalid or expired token"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "403 Forbidden: the caller can't use this (privileges, token scope, feature turned off)"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "404 Not Found: not-found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "409 Conflict: not-ready"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "500 Internal Server Error: internal"
+          }
+        },
+        "summary": "Restore chosen items from a backup",
         "tags": [
           "Backups"
         ],
@@ -30940,6 +31539,251 @@
         "x-kypanel-token": "admin token area: accounts; account token area: resource-usage"
       }
     },
+    "/api/v1/accounts/{id}/restore/items": {
+      "post": {
+        "operationId": "restoreStagedItems",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "items": {
+                    "$ref": "#/components/schemas/HostingRestoreItems"
+                  },
+                  "upload": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "job_id": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Accepted (runs in the background)"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "400 Bad Request: validation"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "401 Unauthorized: no session, or an invalid or expired token"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "403 Forbidden: the caller can't use this (privileges, token scope, feature turned off)"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "404 Not Found: not-found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "409 Conflict: not-ready"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "500 Internal Server Error: internal"
+          }
+        },
+        "summary": "Restore chosen items from an uploaded backup",
+        "tags": [
+          "Accounts"
+        ],
+        "x-kypanel-access": "root, reseller (ACL: create-user-session); customer",
+        "x-kypanel-feature": "backups",
+        "x-kypanel-token": "admin token area: accounts; account token area: restore"
+      }
+    },
+    "/api/v1/accounts/{id}/restore/stage": {
+      "post": {
+        "description": "Takes an uploaded full backup and answers with what it holds.",
+        "operationId": "restoreStage",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "contents": {
+                      "$ref": "#/components/schemas/HostingBackupInventory"
+                    },
+                    "upload": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "400 Bad Request: file-operation, invalid-body, upload, validation"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "401 Unauthorized: no session, or an invalid or expired token"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "403 Forbidden: the caller can't use this (privileges, token scope, feature turned off)"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "404 Not Found: not-found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "409 Conflict: not-ready"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "422 Unprocessable Entity: backup"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "500 Internal Server Error: internal"
+          }
+        },
+        "summary": "Upload a full backup to restore items from",
+        "tags": [
+          "Accounts"
+        ],
+        "x-kypanel-access": "root, reseller (ACL: create-user-session); customer",
+        "x-kypanel-feature": "backups",
+        "x-kypanel-token": "admin token area: accounts; account token area: restore"
+      }
+    },
     "/api/v1/accounts/{id}/restore/upload": {
       "post": {
         "description": "PartialRestore takes an uploaded partial backup: kind=home|database (restored by a job) or forwarders|filters (added right away). Multipart fields: kind, file, and database / domain_id / overwrite as needed.",
@@ -30954,6 +31798,21 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "202": {
             "content": {
@@ -30981,7 +31840,7 @@
                 }
               }
             },
-            "description": "400 Bad Request: invalid-body, upload, validation"
+            "description": "400 Bad Request: file-operation, invalid-body, upload, validation"
           },
           "401": {
             "content": {
@@ -36377,6 +37236,153 @@
         "x-kypanel-token": "admin token area: backups"
       }
     },
+    "/api/v1/backup/convert": {
+      "post": {
+        "description": "{\"path\": a file on this server} or an upload.",
+        "operationId": "adminConvert",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "restore",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "restore": {
+                    "type": "boolean"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "job_id": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Accepted (runs in the background)"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "400 Bad Request: file-operation, invalid-body, upload, validation"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "401 Unauthorized: no session, or an invalid or expired token"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "403 Forbidden: the caller can't use this (privileges, token scope, feature turned off)"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "500 Internal Server Error: internal"
+          }
+        },
+        "summary": "Convert another panel's backup",
+        "tags": [
+          "Backups"
+        ],
+        "x-kypanel-access": "root",
+        "x-kypanel-token": "admin token area: backups"
+      }
+    },
+    "/api/v1/backup/converters": {
+      "get": {
+        "operationId": "adminConverters",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "items": {
+                      "items": {
+                        "$ref": "#/components/schemas/ConverterInfo"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "401 Unauthorized: no session, or an invalid or expired token"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "403 Forbidden: the caller can't use this (privileges, token scope, feature turned off)"
+          }
+        },
+        "summary": "List the backup converters",
+        "tags": [
+          "Backups"
+        ],
+        "x-kypanel-access": "root",
+        "x-kypanel-token": "admin token area: backups"
+      }
+    },
     "/api/v1/backup/destinations": {
       "get": {
         "operationId": "destList",
@@ -38757,8 +39763,13 @@
                     },
                     "log_cursor": {
                       "type": "integer"
-                    }
+                    },
+                    "result": {}
                   },
+                  "required": [
+                    "log",
+                    "log_cursor"
+                  ],
                   "type": "object"
                 }
               }
@@ -54905,19 +55916,10 @@
                   "host": {
                     "type": "string"
                   },
-                  "password": {
-                    "type": "string"
-                  },
                   "port": {
                     "type": "integer"
                   },
-                  "private_key": {
-                    "type": "string"
-                  },
                   "token": {
-                    "type": "string"
-                  },
-                  "user": {
                     "type": "string"
                   }
                 },
